@@ -8,56 +8,47 @@ interface Props {
 
 export default function PresetGrid({ activePreset, onSelect }: Props) {
   return (
-    <div className="w-full">
-      <p className="text-xs mb-2" style={{ color: 'var(--color-text-3)' }}>Tuning</p>
-      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+    <div className="w-full flex flex-col gap-1.5">
+      {/* Horizontal scroll strip */}
+      <div
+        className="flex gap-1.5 overflow-x-auto"
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+      >
         {SWJ_PRESETS.map((preset) => {
           const active = preset.id === activePreset.id;
           return (
             <button
               key={preset.id}
               onClick={() => onSelect(preset)}
-              className="flex flex-col items-start px-3 py-2.5 rounded-lg border text-left transition-all duration-150"
+              className="flex-none px-3 py-1.5 rounded-lg border transition-all duration-150"
               style={{
                 background: active ? 'var(--color-surface-3)' : 'var(--color-surface-1)',
                 borderColor: active ? 'var(--color-border-strong)' : 'var(--color-border)',
               }}
             >
               <span
-                className="font-sans text-xs font-medium leading-tight"
-                style={{ color: active ? 'var(--color-accent)' : 'var(--color-text-1)' }}
+                className="font-sans text-xs font-medium whitespace-nowrap"
+                style={{ color: active ? 'var(--color-accent)' : 'var(--color-text-2)' }}
               >
                 {preset.name}
-              </span>
-              <span
-                className="font-mono text-xs mt-0.5 leading-tight"
-                style={{ color: 'var(--color-text-3)', fontSize: '10px' }}
-              >
-                {preset.tuningLabel}
               </span>
             </button>
           );
         })}
       </div>
 
-      {/* Songs for active preset */}
-      {activePreset.songs.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {activePreset.songs.map((song) => (
-            <span
-              key={song}
-              className="text-xs px-2 py-0.5 rounded-full border"
-              style={{
-                color: 'var(--color-text-3)',
-                borderColor: 'var(--color-border)',
-                background: 'var(--color-surface-1)',
-              }}
-            >
-              {song}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Active preset detail */}
+      <div className="flex items-center gap-2">
+        <span className="font-mono text-xs" style={{ color: 'var(--color-text-3)', fontSize: '10px' }}>
+          {activePreset.tuningLabel}
+        </span>
+        {activePreset.songs.length > 0 && (
+          <span className="text-xs" style={{ color: 'var(--color-text-3)', fontSize: '10px' }}>
+            · {activePreset.songs.slice(0, 2).join(', ')}
+            {activePreset.songs.length > 2 ? ` +${activePreset.songs.length - 2}` : ''}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'icons/*.png'],
       manifest: {
-        name: 'SWJ Tuner',
-        short_name: 'SWJ Tuner',
+        name: "Gary's Tuner",
+        short_name: "Gary's Tuner",
         description: 'Guitar tuner for Stephen Wilson Jr. songs',
         theme_color: '#0A0A0C',
         background_color: '#0A0A0C',

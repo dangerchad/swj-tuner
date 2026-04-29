@@ -40,7 +40,6 @@ export default function TunerView() {
 
   useEffect(() => {
     if (!isListening) {
-      // Auto-save if practiced for at least 30 seconds
       if (wasListening.current && elapsedRef.current >= 30) {
         addLog({
           id: Date.now().toString(),
@@ -81,102 +80,109 @@ export default function TunerView() {
         setListening(false);
         const name = (err as Error)?.name ?? '';
         if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-          setMicError('Mic access denied — allow it in your browser settings and try again.');
+          setMicError('Mic access denied — allow it in your browser settings.');
         } else if (name === 'NotFoundError') {
-          setMicError('No microphone found. Plug one in and try again.');
+          setMicError('No microphone found.');
         } else {
-          setMicError('Could not start microphone. Check your browser permissions.');
+          setMicError('Could not start microphone.');
         }
       }
     }
   }, [isListening, setListening]);
 
   return (
-    <div className="flex flex-col gap-5 p-4 w-full max-w-lg mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-2">
-        <h1 className="font-mono text-base font-bold" style={{ color: 'var(--color-text-1)' }}>
-          SWJ Tuner
-        </h1>
-        <div className="flex items-center gap-3">
-          {isListening && elapsed > 0 && (
-            <span className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>
-              {String(Math.floor(elapsed / 60)).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}
-            </span>
-          )}
-          <PrivacyBadge />
+    <>
+      {/* Scrollable content — pb-28 so fixed button doesn't overlap */}
+      <div className="flex flex-col gap-3 p-4 w-full max-w-lg mx-auto pb-28">
+        {/* Header */}
+        <div className="flex items-center justify-between pt-1">
+          <h1 className="font-mono text-base font-bold" style={{ color: 'var(--color-text-1)' }}>
+            Gary's Tuner
+          </h1>
+          <div className="flex items-center gap-3">
+            {isListening && elapsed > 0 && (
+              <span className="font-mono text-xs" style={{ color: 'var(--color-text-3)' }}>
+                {String(Math.floor(elapsed / 60)).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')}
+              </span>
+            )}
+            <PrivacyBadge />
+          </div>
+        </div>
+
+        {/* Preset strip */}
+        <PresetGrid activePreset={preset} onSelect={setPreset} />
+
+        {/* Chord shapes (collapsed toggle) */}
+        <ChordShapesPanel preset={preset} detectedChord={chord} />
+
+        {/* Capo reminder */}
+        <CapoBar capo={preset.capo} />
+
+        {/* String selector */}
+        <StringSelector
+          preset={preset}
+          activeIndex={activeStringIndex}
+          isTuned={tuneState === 'tuned'}
+          onSelect={setActiveString}
+        />
+
+        {/* Divider */}
+        <div style={{ height: '1px', background: 'var(--color-border)' }} />
+
+        {/* Mode pills */}
+        <ModePills mode={mode} onModeChange={setModeManual} />
+
+        {/* ── Note mode ── */}
+        {mode === 'note' && (
+          <>
+            <BigNoteDisplay
+              noteName={noteName}
+              octave={noteOctave}
+              frequency={frequency}
+              isListening={isListening}
+            />
+            <TighteningArrow state={tuneState} cents={cents} />
+            <StrobeMeter cents={cents} isActive={isListening && !!noteName} />
+          </>
+        )}
+
+        {/* ── Chord mode ── */}
+        {mode === 'chord' && (
+          <>
+            <ChordDisplay chord={chord} isListening={isListening} />
+            <ChordHistory history={chordHistory} current={chord} />
+            {key && isListening && (
+              <div className="flex items-center gap-2 justify-center">
+                <span className="text-xs" style={{ color: 'var(--color-text-3)' }}>Key</span>
+                <span className="font-mono text-sm font-medium" style={{ color: 'var(--color-text-2)' }}>
+                  {key}
+                </span>
+              </div>
+            )}
+          </>
+        )}
+
+        {micError && (
+          <p className="text-xs text-center" style={{ color: 'var(--color-tighten)' }}>{micError}</p>
+        )}
+        {sessionSaved && (
+          <p className="text-xs text-center" style={{ color: 'var(--color-accent)' }}>Session saved to Practice tab</p>
+        )}
+      </div>
+
+      {/* Fixed Start/Stop — always visible above nav */}
+      <div
+        className="fixed left-0 right-0 flex justify-center items-end pb-3 pt-6"
+        style={{
+          bottom: '48px',
+          background: 'linear-gradient(to bottom, transparent, var(--color-bg) 55%)',
+          pointerEvents: 'none',
+        }}
+      >
+        <div style={{ pointerEvents: 'auto' }}>
+          <StartStopButton isListening={isListening} onToggle={handleToggle} />
         </div>
       </div>
-
-      {/* Preset selector */}
-      <PresetGrid activePreset={preset} onSelect={setPreset} />
-
-      {/* Chord shapes for this tuning */}
-      <ChordShapesPanel preset={preset} detectedChord={chord} />
-
-      {/* Capo reminder */}
-      <CapoBar capo={preset.capo} />
-
-      {/* String selector */}
-      <StringSelector
-        preset={preset}
-        activeIndex={activeStringIndex}
-        isTuned={tuneState === 'tuned'}
-        onSelect={setActiveString}
-      />
-
-      {/* Divider */}
-      <div style={{ height: '1px', background: 'var(--color-border)' }} />
-
-      {/* Mode pills */}
-      <ModePills mode={mode} onModeChange={setModeManual} />
-
-      {/* ── Note mode ── */}
-      {mode === 'note' && (
-        <>
-          <BigNoteDisplay
-            noteName={noteName}
-            octave={noteOctave}
-            frequency={frequency}
-            isListening={isListening}
-          />
-          <TighteningArrow state={tuneState} cents={cents} />
-          <StrobeMeter cents={cents} isActive={isListening && !!noteName} />
-        </>
-      )}
-
-      {/* ── Chord mode ── */}
-      {mode === 'chord' && (
-        <>
-          <ChordDisplay chord={chord} isListening={isListening} />
-          <ChordHistory history={chordHistory} current={chord} />
-          {key && isListening && (
-            <div className="flex items-center gap-2 justify-center">
-              <span className="text-xs" style={{ color: 'var(--color-text-3)' }}>Key</span>
-              <span className="font-mono text-sm font-medium" style={{ color: 'var(--color-text-2)' }}>
-                {key}
-              </span>
-            </div>
-          )}
-        </>
-      )}
-
-      {micError && (
-        <p className="text-xs text-center px-2" style={{ color: 'var(--color-tighten)' }}>
-          {micError}
-        </p>
-      )}
-
-      {sessionSaved && (
-        <p className="text-xs text-center" style={{ color: 'var(--color-accent)' }}>
-          Session saved to Practice tab
-        </p>
-      )}
-
-      {/* Start / stop */}
-      <div className="flex justify-center pt-2">
-        <StartStopButton isListening={isListening} onToggle={handleToggle} />
-      </div>
-    </div>
+    </>
   );
 }

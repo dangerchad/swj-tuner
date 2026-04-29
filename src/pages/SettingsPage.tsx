@@ -84,7 +84,7 @@ export default function SettingsPage() {
       >
         <h3 className="text-sm font-medium" style={{ color: 'var(--color-text-2)' }}>About</h3>
         <p className="text-sm" style={{ color: 'var(--color-text-3)' }}>
-          SWJ Tuner is a precision guitar tuner built for learning Stephen Wilson Jr.'s catalog.
+          Gary's Tuner is a precision guitar tuner built for learning Stephen Wilson Jr.'s catalog.
           Supports all 10 open tunings from his confirmed live and studio performances.
         </p>
         <div
